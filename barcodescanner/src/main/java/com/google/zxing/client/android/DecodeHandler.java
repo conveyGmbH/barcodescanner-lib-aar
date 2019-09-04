@@ -44,6 +44,7 @@ final class DecodeHandler extends Handler {
   private final MultiFormatReader multiFormatReader;
   private boolean running = true;
   private int frameCount;
+  private List<String> results = new ArrayList<String>();
 
   DecodeHandler(CaptureActivity activity, Map<DecodeHintType,Object> hints) {
     multiFormatReader = new MultiFormatReader();
@@ -100,6 +101,19 @@ final class DecodeHandler extends Handler {
         multiFormatReader.reset();
       }
     }
+    if (rawResult != null) {
+		for (int i = 0; i < results.size(); i++) {
+		  String prevResultText = results.get(i);
+		  if (!prevResultText || !(prevResultText.equals(rawResult.getText()))) {
+			results.clear();
+			break;
+		  }
+		}
+		results.add(rawResult.getText());
+		if (results.size() < 5) {
+		  rawResult = null;
+		}
+	}
 
     Handler handler = activity.getHandler();
     if (rawResult != null) {
