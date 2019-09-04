@@ -23,11 +23,14 @@ import com.google.zxing.common.CharacterSetECI;
 import com.google.zxing.common.DecoderResult;
 import com.google.zxing.common.StringUtils;
 
+import java.lang.String;
+import java.lang.System;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import android.util.Base64;
 
 /**
  * <p>QR Codes can encode text as bits in one of several modes, and can use multiple modes
@@ -46,6 +49,24 @@ final class DecodedBitStreamParser {
       "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:".toCharArray();
   private static final int GB2312_SUBSET = 1;
 
+  // some specials for QR-codes --------------------------
+
+  // after the prefix comes *real* binary data (to be taken as is and to be base64 encoded)
+  // has to at least end with alphanumerics, so the QR-Code is multi-part
+
+  //private static final String kPrefixBinary = "";
+  private static final String kPrefixBinary = "#LSAD";
+
+
+  // total prefix-lenght can be more, e.g. with "#LSAD01" or "#LSAD02" for sub-types
+
+  //private static final int kPrefixLength = 0;
+  private static final int kPrefixLength = 7;
+
+  // end of specials for QR-codes ------------------------
+
+
+
   private DecodedBitStreamParser() {
   }
 
@@ -58,7 +79,7 @@ final class DecodedBitStreamParser {
     List<byte[]> byteSegments = new ArrayList<>(1);
     int symbolSequence = -1;
     int parityData = -1;
-    
+
     try {
       CharacterSetECI currentCharacterSetECI = null;
       boolean fc1InEffect = false;
@@ -233,8 +254,41 @@ final class DecodedBitStreamParser {
       encoding = currentCharacterSetECI.name();
     }
     try {
-      result.append(new String(readBytes, encoding));
-    } catch (UnsupportedEncodingException ignored) {
+
+		if (kPrefixBinary.length() > 0 && result.toString().indexOf(kPrefixBinary) == 0 ){
+			if (result.length() > kPrefixLength){
+				int nTmp = result.length() - kPrefixLength;
+				String tmpStr = result.substring(kPrefixLength, kPrefixLength + nTmp);
+				byte[] tmpbuf = new byte[nTmp + count];
+				System.arraycopy(tmpStr.getBytes(), 0, tmpbuf, 0, nTmp);
+				System.arraycopy(readBytes, 0, tmpbuf, nTmp, count);
+				result.delete(kPrefixLength, nTmp + kPrefixLength);
+				result.append(Base64.encodeToString(tmpbuf, Base64.NO_WRAP));
+				tmpbuf = null;
+			}else{
+				result.append(Base64.encodeToString(readBytes, Base64.NO_WRAP));
+			}
+		}else if (count >= kPrefixLength){
+
+			int i, l = kPrefixBinary.length();
+			for (i = 0; i < count && i < l && readBytes[i] == kPrefixBinary.charAt(i); i++)
+			      {
+                  }
+                  if (i == l)
+					{
+					   result.append(new String(readBytes, encoding));
+					   byte[] tmpbuf = new byte[count - kPrefixLength];
+					   System.arraycopy(readBytes, kPrefixLength, tmpbuf, 0, count - kPrefixLength);
+					   result.append(Base64.encodeToString(tmpbuf, Base64.NO_WRAP));
+					}
+					else
+					{
+                       result.append(new String(readBytes, encoding));
+					}
+		}else{
+      		result.append(new String(readBytes, encoding));
+		}
+    } catch (UnsupportedEncodingException uce) {
       throw FormatException.getFormatInstance();
     }
     byteSegments.add(readBytes);
