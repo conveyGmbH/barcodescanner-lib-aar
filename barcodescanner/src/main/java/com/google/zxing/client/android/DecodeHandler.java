@@ -32,6 +32,8 @@ import android.os.Message;
 import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import barcodescanner.xservices.nl.barcodescanner.R;
@@ -104,7 +106,7 @@ final class DecodeHandler extends Handler {
     if (rawResult != null) {
 		for (int i = 0; i < results.size(); i++) {
 		  String prevResultText = results.get(i);
-		  if (!prevResultText || !(prevResultText.equals(rawResult.getText()))) {
+		  if (prevResultText != null || !prevResultText.equals(rawResult.getText())) {
 			results.clear();
 			break;
 		  }
