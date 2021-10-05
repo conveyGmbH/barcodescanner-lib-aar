@@ -258,7 +258,7 @@ final class DecodedBitStreamParser {
 		if (kPrefixBinary.length() > 0 && result.toString().indexOf(kPrefixBinary) == 0 ){
 			if (result.length() > kPrefixLength){
 				int nTmp = result.length() - kPrefixLength;
-				String tmpStr = result.substring(kPrefixLength, kPrefixLength + nTmp);
+				String tmpStr = result.toString().substring(kPrefixLength, kPrefixLength + nTmp);
 				byte[] tmpbuf = new byte[nTmp + count];
 				System.arraycopy(tmpStr.getBytes(), 0, tmpbuf, 0, nTmp);
 				System.arraycopy(readBytes, 0, tmpbuf, nTmp, count);
@@ -276,7 +276,7 @@ final class DecodedBitStreamParser {
                   }
                   if (i == l)
 					{
-					   result.append(new String(readBytes, encoding));
+					   result.append(new String(readBytes, encoding).substring(0, kPrefixLength));
 					   byte[] tmpbuf = new byte[count - kPrefixLength];
 					   System.arraycopy(readBytes, kPrefixLength, tmpbuf, 0, count - kPrefixLength);
 					   result.append(Base64.encodeToString(tmpbuf, Base64.NO_WRAP));

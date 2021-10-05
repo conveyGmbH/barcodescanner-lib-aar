@@ -44,14 +44,16 @@ final class DecodeHandler extends Handler {
 
   private final CaptureActivity activity;
   private final MultiFormatReader multiFormatReader;
-  private boolean running = true;
+  private boolean running;
   private int frameCount;
-  private List<String> results = new ArrayList<String>();
+  private List<String> results;
 
   DecodeHandler(CaptureActivity activity, Map<DecodeHintType,Object> hints) {
+	running = true;
     multiFormatReader = new MultiFormatReader();
     multiFormatReader.setHints(hints);
     this.activity = activity;
+    results = new ArrayList<String>();
   }
 
   @Override
@@ -103,20 +105,20 @@ final class DecodeHandler extends Handler {
         multiFormatReader.reset();
       }
     }
-    if (rawResult != null) {
-		for (int i = 0; i < results.size(); i++) {
+
+    if (rawResult != null && rawResult.getText() != null && rawResult.getText().length() > 0) {
+		if (results.size() > 0) for (int i = 0; i < results.size(); i++) {
 		  String prevResultText = results.get(i);
-		  if (prevResultText != null || !prevResultText.equals(rawResult.getText())) {
+		  if (prevResultText != null && prevResultText.length() > 0 && !prevResultText.equals(rawResult.getText())) {
 			results.clear();
 			break;
 		  }
 		}
-		results.add(rawResult.getText());
+		results.add(new String(rawResult.getText()));
 		if (results.size() < 5) {
 		  rawResult = null;
 		}
 	}
-
     Handler handler = activity.getHandler();
     if (rawResult != null) {
       // Don't log the barcode contents for security.
