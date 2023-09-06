@@ -349,7 +349,16 @@ public final class CameraConfigurationUtils {
     // the CPU is much more powerful.
     if (!supportedPreviewSizes.isEmpty()) {
       Camera.Size largestPreview = supportedPreviewSizes.get(0);
-      Point largestSize = new Point(largestPreview.width, largestPreview.height);
+      Iterator<Camera.Size> iter = supportedPreviewSizes.iterator();
+      Point largestSize = largestSize = new Point(largestPreview.width, largestPreview.height);
+      while (iter.hasNext()) {
+        largestPreview = iter.next();
+        if(largestPreview.width >= largestPreview.height && largestPreview.height < 720 ||
+           largestPreview.height >= largestPreview.width && largestPreview.width < 720) {
+          largestSize = new Point(largestPreview.width, largestPreview.height);
+          break;
+        }
+      }
       Log.i(TAG, "Using largest suitable preview size: " + largestSize);
       return largestSize;
     }
