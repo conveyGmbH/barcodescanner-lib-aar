@@ -35,6 +35,7 @@ import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import com.google.zxing.BarcodeFormat;
 
 import barcodescanner.xservices.nl.barcodescanner.R;
 
@@ -115,7 +116,7 @@ final class DecodeHandler extends Handler {
 		  }
 		}
 		results.add(new String(rawResult.getText()));
-		if (results.size() < 5) {
+		if (rawResult.getBarcodeFormat() != BarcodeFormat.QR_CODE && rawResult.getBarcodeFormat() != BarcodeFormat.AZTEC && results.size() < 4) {
 		  rawResult = null;
 		}
 	}
