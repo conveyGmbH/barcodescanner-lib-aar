@@ -91,16 +91,16 @@ public final class BaseLuminanceSource extends LuminanceSource {
 
   @Override
   public LuminanceSource rotateCounterClockwise() {
-    var rotatedLuminances = new byte[Width * Height];
-    var newWidth = Height;
-    var newHeight = Width;
-    var localLuminances = getMatrix();
-    for (var yold = 0; yold < Height; yold++)
+    byte[] rotatedLuminances = new byte[Width * Height];
+    int newWidth = Height;
+    int newHeight = Width;
+    byte[] localLuminances = getMatrix();
+    for (int yold = 0; yold < Height; yold++)
     {
-	  for (var xold = 0; xold < Width; xold++)
+	  for (int xold = 0; xold < Width; xold++)
 	  {
-		var ynew = newHeight - xold - 1;
-		var xnew = yold;
+		int ynew = newHeight - xold - 1;
+		int xnew = yold;
 		rotatedLuminances[ynew * newWidth + xnew] = localLuminances[yold * Width + xold];
 	  }
     }
@@ -122,11 +122,11 @@ public final class BaseLuminanceSource extends LuminanceSource {
     if (left + width > Width || top + height > Height) {
 	  throw new IllegalArgumentException("Crop rectangle does not fit within image data.");
 	}
-    var croppedLuminances = new byte[width * height];
-    var oldLuminances = getMatrix();
-    var oldWidth = Width;
-    var oldRightBound = left + width;
-    var oldBottomBound = top + height;
+    byte[] croppedLuminances = new byte[width * height];
+    byte[] oldLuminances = getMatrix();
+    int oldWidth = Width;
+    int oldRightBound = left + width;
+    int oldBottomBound = top + height;
     for (int yold = top, ynew = 0; yold < oldBottomBound; yold++, ynew++)
     {
       for (int xold = left, xnew = 0; xold < oldRightBound; xold++, xnew++)
