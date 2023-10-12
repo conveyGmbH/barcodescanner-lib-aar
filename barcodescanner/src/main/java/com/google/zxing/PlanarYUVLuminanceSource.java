@@ -26,10 +26,10 @@ package com.google.zxing;
  *
  * @author dswitkin@google.com (Daniel Switkin)
  */
-public final class PlanarYUVLuminanceSource extends LuminanceSource {
+public final class PlanarYUVLuminanceSource extends BaseLuminanceSource {
 
   private static final int THUMBNAIL_SCALE_FACTOR = 2;
-  
+
   private final byte[] yuvData;
   private final int dataWidth;
   private final int dataHeight;
@@ -138,17 +138,17 @@ public final class PlanarYUVLuminanceSource extends LuminanceSource {
     }
     return pixels;
   }
-  
+
   /**
    * @return width of image from {@link #renderThumbnail()}
    */
   public int getThumbnailWidth() {
     return getWidth() / THUMBNAIL_SCALE_FACTOR;
   }
-  
+
   /**
    * @return height of image from {@link #renderThumbnail()}
-   */  
+   */
   public int getThumbnailHeight() {
     return getHeight() / THUMBNAIL_SCALE_FACTOR;
   }

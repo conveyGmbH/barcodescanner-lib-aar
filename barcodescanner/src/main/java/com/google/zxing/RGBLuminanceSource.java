@@ -23,7 +23,7 @@ package com.google.zxing;
  * @author dswitkin@google.com (Daniel Switkin)
  * @author Betaminos
  */
-public final class RGBLuminanceSource extends LuminanceSource {
+public final class RGBLuminanceSource extends BaseLuminanceSource {
 
   private final byte[] luminances;
   private final int dataWidth;
@@ -54,7 +54,7 @@ public final class RGBLuminanceSource extends LuminanceSource {
       luminances[offset] = (byte) ((r + g2 + b) / 4);
     }
   }
-  
+
   private RGBLuminanceSource(byte[] pixels,
                              int dataWidth,
                              int dataHeight,
@@ -116,7 +116,7 @@ public final class RGBLuminanceSource extends LuminanceSource {
     }
     return matrix;
   }
-  
+
   @Override
   public boolean isCropSupported() {
     return true;
