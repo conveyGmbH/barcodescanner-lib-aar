@@ -22,7 +22,7 @@ package com.google.zxing;
  *
  * @author gilbert@convey.de (Gilbet schwaab)
  */
-public final class BaseLuminanceSource extends LuminanceSource {
+public class BaseLuminanceSource extends LuminanceSource {
 
 /**
  * the following channel weights give nearly the same
@@ -30,12 +30,12 @@ public final class BaseLuminanceSource extends LuminanceSource {
  * they are used in sub classes for luminance / gray scale calculation
  */
 
-  private static final int RChannelWeight = 19562;
-  private static final int GChannelWeight = 38550;
-  private static final int BChannelWeight = 7424;
-  private static final int ChannelWeight = 16;
+  private static int RChannelWeight = 19562;
+  private static int GChannelWeight = 38550;
+  private static int BChannelWeight = 7424;
+  private static int ChannelWeight = 16;
 
-  private final byte[] luminances;
+  private byte[] luminances;
 
 /**
  * Initializes a new instance of the BaseLuminanceSource class.
@@ -91,17 +91,17 @@ public final class BaseLuminanceSource extends LuminanceSource {
 
   @Override
   public LuminanceSource rotateCounterClockwise() {
-    byte[] rotatedLuminances = new byte[Width * Height];
-    int newWidth = Height;
-    int newHeight = Width;
+    byte[] rotatedLuminances = new byte[getWidth() * getHeight()];
+    int newWidth = getHeight();
+    int newHeight = getWidth();
     byte[] localLuminances = getMatrix();
-    for (int yold = 0; yold < Height; yold++)
+    for (int yold = 0; yold < getHeight(); yold++)
     {
-	  for (int xold = 0; xold < Width; xold++)
+	  for (int xold = 0; xold < getWidth(); xold++)
 	  {
 		int ynew = newHeight - xold - 1;
 		int xnew = yold;
-		rotatedLuminances[ynew * newWidth + xnew] = localLuminances[yold * Width + xold];
+		rotatedLuminances[ynew * newWidth + xnew] = localLuminances[yold * getWidth() + xold];
 	  }
     }
 	return new BaseLuminanceSource(rotatedLuminances, newWidth, newHeight);
@@ -119,12 +119,12 @@ public final class BaseLuminanceSource extends LuminanceSource {
  */
   @Override
   public LuminanceSource crop(int left, int top, int width, int height) {
-    if (left + width > Width || top + height > Height) {
+    if (left + width > getWidth() || top + height > getHeight()) {
 	  throw new IllegalArgumentException("Crop rectangle does not fit within image data.");
 	}
     byte[] croppedLuminances = new byte[width * height];
     byte[] oldLuminances = getMatrix();
-    int oldWidth = Width;
+    int oldWidth = getWidth();
     int oldRightBound = left + width;
     int oldBottomBound = top + height;
     for (int yold = top, ynew = 0; yold < oldBottomBound; yold++, ynew++)
