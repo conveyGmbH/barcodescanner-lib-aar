@@ -51,7 +51,7 @@ public final class ITFReader extends OneDReader {
   private static final int N = 1; // Pixed width of a narrow line
 
   /** Valid ITF lengths. Anything longer than the largest value is also allowed. */
-  private static final int[] DEFAULT_ALLOWED_LENGTHS = { 6, 8, 10, 12, 14 };
+  private static final int[] DEFAULT_ALLOWED_LENGTHS = { 14 };
 
   // Stores the actual narrow line width of the image being decoded.
   private int narrowLineWidth = -1;
