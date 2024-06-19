@@ -353,8 +353,8 @@ public final class CameraConfigurationUtils {
       Point largestSize = largestSize = new Point(largestPreview.width, largestPreview.height);
       while (iter.hasNext()) {
         largestPreview = iter.next();
-        if(largestPreview.width >= largestPreview.height && largestPreview.height <= 720 ||
-           largestPreview.height >= largestPreview.width && largestPreview.width <= 720) {
+        if(largestPreview.width >= largestPreview.height && largestPreview.height <= 1080 ||
+           largestPreview.height >= largestPreview.width && largestPreview.width <= 1080) {
           largestSize = new Point(largestPreview.width, largestPreview.height);
           break;
         }
