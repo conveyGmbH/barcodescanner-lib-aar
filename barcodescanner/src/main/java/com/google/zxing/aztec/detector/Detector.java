@@ -21,6 +21,7 @@ import com.google.zxing.ResultPoint;
 import com.google.zxing.aztec.AztecDetectorResult;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.common.GridSampler;
+import com.google.zxing.common.detector.CornerDetector;
 import com.google.zxing.common.detector.MathUtils;
 import com.google.zxing.common.detector.WhiteRectangleDetector;
 import com.google.zxing.common.reedsolomon.GenericGF;
@@ -77,15 +78,15 @@ public final class Detector {
     // 3. Get the size of the matrix and other parameters from the bull's eye
     extractParameters(bullsEyeCorners);
     
-    // 4. Sample the grid
-    BitMatrix bits = sampleGrid(image,
-                                bullsEyeCorners[shift % 4], 
-                                bullsEyeCorners[(shift + 1) % 4],
-                                bullsEyeCorners[(shift + 2) % 4], 
-                                bullsEyeCorners[(shift + 3) % 4]);
+    // 4. Get the corners of the matrix.
+    ResultPoint[] corners = getMatrixCornerPoints(pCenter, bullsEyeCorners, getDimension());
 
-    // 5. Get the corners of the matrix.
-    ResultPoint[] corners = getMatrixCornerPoints(bullsEyeCorners);
+    // 5. Sample the grid
+    BitMatrix bits = sampleGrid(image,
+                                corners[(shift + 1) % 4],
+                                corners[(shift + 2) % 4],
+                                corners[(shift + 3) % 4],
+                                corners[shift % 4]);
     
     return new AztecDetectorResult(bits, corners, compact, nbDataBlocks, nbLayers);
   }
@@ -234,6 +235,8 @@ public final class Detector {
    */
   private ResultPoint[] getBullsEyeCorners(Point pCenter) throws NotFoundException {
     
+    float corr_factor = 1.0f;
+
     Point pina = pCenter;
     Point pinb = pCenter;
     Point pinc = pCenter;
@@ -242,6 +245,8 @@ public final class Detector {
     boolean color = true;
     
     for (nbCenterLayers = 1; nbCenterLayers < 9; nbCenterLayers++) {
+      float corr_tmp;
+
       Point pouta = getFirstDifferent(pina, color, 1, -1);
       Point poutb = getFirstDifferent(pinb, color, 1, 1);
       Point poutc = getFirstDifferent(pinc, color, -1, 1);
@@ -252,10 +257,14 @@ public final class Detector {
       //c      b
 
       if (nbCenterLayers > 2) {
+        corr_tmp = Math.max(distance(poutd, pouta) / ((float) (((this.nbCenterLayers * 2) - 1) * 2)), 1.0f);
+
         float q = distance(poutd, pouta) * nbCenterLayers / (distance(pind, pina) * (nbCenterLayers + 2));
-        if (q < 0.75 || q > 1.25 || !isWhiteOrBlackRectangle(pouta, poutb, poutc, poutd)) {
+        if (q < 0.75 || q > 1.25 || !isWhiteOrBlackRectangle(pouta, poutb, poutc, poutd, (int) corr_tmp)) {
           break;
         }
+      } else {
+        corr_tmp = corr_factor;
       }
 
       pina = pouta;
@@ -264,6 +273,7 @@ public final class Detector {
       pind = poutd;
 
       color = !color;
+      corr_factor = corr_tmp;
     }
 
     if (nbCenterLayers != 5 && nbCenterLayers != 7) {
@@ -355,8 +365,21 @@ public final class Detector {
    * @param bullsEyeCorners the array of bull's eye corners
    * @return the array of aztec code corners
    */
-  private ResultPoint[] getMatrixCornerPoints(ResultPoint[] bullsEyeCorners) {
-    return expandSquare(bullsEyeCorners, 2 * nbCenterLayers, getDimension());
+  private ResultPoint[] getMatrixCornerPoints(Point pCenter, ResultPoint[] bullsEyeCorners, int targetMatrixSize) throws NotFoundException {
+    float maxX = 0.0f;
+    float minX = image.getWidth();
+    for (ResultPoint bullsEyeCorner : bullsEyeCorners) {
+      float tmpX = bullsEyeCorner.getX();
+      if (tmpX > maxX) {
+        maxX = tmpX;
+      }
+      if (tmpX < minX) {
+        minX = tmpX;
+      }
+    }
+
+    int initSize = (int) (maxX - minX);  // we are looking for first white rectangle outside of bulls eye
+    return (new CornerDetector(image, initSize, pCenter.getX(), pCenter.getY(), targetMatrixSize)).detect();
   }
 
   /**
@@ -373,8 +396,8 @@ public final class Detector {
     GridSampler sampler = GridSampler.getInstance();
     int dimension = getDimension();
 
-    float low = dimension / 2.0f - nbCenterLayers;
-    float high = dimension / 2.0f + nbCenterLayers;
+    float low = 0.5f;
+    float high = (float) dimension - 0.5f;
 
     return sampler.sampleGrid(image,
                               dimension,
@@ -421,9 +444,8 @@ public final class Detector {
   private boolean isWhiteOrBlackRectangle(Point p1,
                                           Point p2,
                                           Point p3,
-                                          Point p4) {
-
-    int corr = 3;
+                                          Point p4,
+                                          int corr) {
 
     p1 = new Point(p1.getX() - corr, p1.getY() + corr);
     p2 = new Point(p2.getX() - corr, p2.getY() - corr);
